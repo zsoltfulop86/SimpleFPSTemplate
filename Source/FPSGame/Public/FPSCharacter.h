@@ -62,6 +62,9 @@ protected:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
+	UPawnNoiseEmitterComponent* NoiseEmitterComponent;
+
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1PComponent; }

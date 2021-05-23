@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimSequence.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 
 
 AFPSCharacter::AFPSCharacter()
@@ -28,6 +29,9 @@ AFPSCharacter::AFPSCharacter()
 	GunMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
 	GunMeshComponent->CastShadow = false;
 	GunMeshComponent->SetupAttachment(Mesh1PComponent, "GripPoint");
+
+	// Enable the character to make noise with MakeNoise()
+	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
 }
 
 
@@ -57,9 +61,12 @@ void AFPSCharacter::Fire()
 		// Use controller rotation which is our view direction in first person
 		FRotator MuzzleRotation = GetControlRotation();
 
-		//Set Spawn Collision Handling Override
+		// Set Spawn Collision Handling Override
 		FActorSpawnParameters ActorSpawnParams;
-		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		ActorSpawnParams.SpawnCollisionHandlingOverride =
+			ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+		// Make this character the Instigator (derived from Actor)
+		ActorSpawnParams.Instigator = this;
 
 		// spawn the projectile at the muzzle
 		GetWorld()->SpawnActor<AFPSProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, ActorSpawnParams);
