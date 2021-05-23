@@ -46,6 +46,9 @@ void AFPSObjectiveActor::PlayEffects()
 {
 	// spawn and other useful static functions found in `UGameplayStatics`
 	UGameplayStatics::SpawnEmitterAtLocation(this, PickupFX, GetActorLocation());
+
+	UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
+	
 }
 
 // Called when overlapping
