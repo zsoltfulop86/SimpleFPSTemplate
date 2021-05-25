@@ -12,16 +12,17 @@ class AFPSGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	
 	AFPSGameMode();
 
 	// Game completion rules
-	void CompleteMission(APawn* InstigatorPawn);
+	void CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess);
 
 	UFUNCTION(BlueprintImplementableEvent, Category="GameMode")
-	void OnMissionCompleted(APawn* InstigatorPawn);
+	void OnMissionCompleted(APawn* InstigatorPawn, bool bMissionSuccess);
 
 protected:
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="Spectating")
 	TSubclassOf<AActor> SpectatingViewpointClass;
 };

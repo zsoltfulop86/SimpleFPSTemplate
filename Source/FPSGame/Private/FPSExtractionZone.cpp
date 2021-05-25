@@ -35,7 +35,7 @@ void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent,
                                        const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Overlapped with extraction zone!"));
-	
+
 	AFPSCharacter* MyPawn = Cast<AFPSCharacter>(OtherActor);
 	// Return if cast fails
 	if (MyPawn == nullptr)
@@ -50,7 +50,7 @@ void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent,
 		// Check if exists
 		if (GM)
 		{
-			GM->CompleteMission(MyPawn);
+			GM->CompleteMission(MyPawn, true);
 		}
 	}
 	else
@@ -58,5 +58,5 @@ void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent,
 		// 2D sounds are for UI sounds or maybe music - no 3D location needed
 		// :: calls static methods on a class
 		UGameplayStatics::PlaySound2D(this, ObjectiveMissing);
-	}			
+	}
 }

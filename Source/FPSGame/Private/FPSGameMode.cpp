@@ -1,6 +1,8 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
 #include "FPSGameMode.h"
+
+#include "Button.h"
 #include "FPSHUD.h"
 #include "FPSCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,12 +18,14 @@ AFPSGameMode::AFPSGameMode()
 	HUDClass = AFPSHUD::StaticClass();
 }
 
-void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
+void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 {
 	if (InstigatorPawn)
 	{
-		// Disables player controller
-		InstigatorPawn->DisableInput(nullptr);
+		APlayerController* PlayerController = Cast<APlayerController>(InstigatorPawn->GetController());
+
+		// Disables player controller if nullptr or PlayerController
+		InstigatorPawn->DisableInput(PlayerController);
 
 		if (SpectatingViewpointClass)
 		{
@@ -38,7 +42,7 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
 
 				// Always get the reference (*) to the object placed in the game
 				// Get the controller of the instigator and transfer its view from the instigator pawn to the new actor
-				APlayerController* PlayerController = Cast<APlayerController>(InstigatorPawn->GetController());
+				PlayerController = Cast<APlayerController>(InstigatorPawn->GetController());
 				if (PlayerController)
 				{
 					PlayerController->SetViewTargetWithBlend(NewViewTarget, 0.5f,
@@ -46,6 +50,11 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
 				}
 			}
 		}
+
+		// Set Instigator to hidden so it won't be detected after game over (hides in game as well)
+		InstigatorPawn->SetActorHiddenInGame(true);
+		// Set Instigator to hidden so it won't be detected after game over (won't hide in game)
+		// InstigatorPawn->SetHidden(true);
 	}
 	else
 	{
@@ -55,5 +64,5 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
 		       ))
 	}
 
-	OnMissionCompleted(InstigatorPawn);
+	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 }
