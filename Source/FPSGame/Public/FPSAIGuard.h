@@ -36,7 +36,6 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category="AI", meta=(EditCondition="bPatrol	"))
 	float SwitchPatrolDistance;
 
-
 	// Can use arrays instead of individual points
 	// meta disables editing if bPatrol is false
 	UPROPERTY(EditInstanceOnly, Category="AI", meta=(EditCondition="bPatrol"))

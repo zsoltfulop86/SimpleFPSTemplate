@@ -66,3 +66,4 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn, bool bMissionSuccess)
 
 	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 }
+

@@ -12,7 +12,6 @@ class AFPSGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	
 	AFPSGameMode();
 
 	// Game completion rules
@@ -22,7 +21,6 @@ public:
 	void OnMissionCompleted(APawn* InstigatorPawn, bool bMissionSuccess);
 
 protected:
-	
 	UPROPERTY(EditDefaultsOnly, Category="Spectating")
 	TSubclassOf<AActor> SpectatingViewpointClass;
 };

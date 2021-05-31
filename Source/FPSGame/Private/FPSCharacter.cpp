@@ -9,13 +9,14 @@
 #include "Animation/AnimSequence.h"
 #include "Components/PawnNoiseEmitterComponent.h"
 
-
 AFPSCharacter::AFPSCharacter()
 {
 	// Create a CameraComponent	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	CameraComponent->SetupAttachment(GetCapsuleComponent());
 	CameraComponent->SetRelativeLocation(FVector(0, 0, BaseEyeHeight)); // Position the camera
+	// Replicated from server to clients but not from clients
+	CameraComponent->SetIsReplicated(true);
 	CameraComponent->bUsePawnControlRotation = true;
 
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
@@ -50,8 +51,9 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 }
 
-
-void AFPSCharacter::Fire()
+// _Implementation is required to implement the ServerFire() function
+// The header method is generated behind the scenes, so no declaration is required in the .h file
+void AFPSCharacter::ServerFire_Implementation()
 {
 	// try and fire a projectile
 	if (ProjectileClass)
@@ -71,6 +73,18 @@ void AFPSCharacter::Fire()
 		// spawn the projectile at the muzzle
 		GetWorld()->SpawnActor<AFPSProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, ActorSpawnParams);
 	}
+}
+
+// _Validate function impl is required by Server functions
+// The header method is generated behind the scenes, so no declaration is required in the .h file
+bool AFPSCharacter::ServerFire_Validate()
+{
+	return true;
+}
+
+void AFPSCharacter::Fire()
+{
+	ServerFire();
 
 	// try and play the sound if specified
 	if (FireSound)
@@ -107,5 +121,34 @@ void AFPSCharacter::MoveRight(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
+	}
+}
+
+void AFPSCharacter::SetCameraPitch_Implementation(FRotator Rotation)
+{
+	CameraComponent->SetRelativeRotation(Rotation);
+}
+
+bool AFPSCharacter::SetCameraPitch_Validate(FRotator Rotation)
+{
+	return true;
+}
+
+void AFPSCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	// Replicate camera pitch if client executes this method
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		SetCameraPitch(CameraComponent->GetRelativeRotation());	
+	}
+	
+
+	// Restart game on pressing the R key -> is not affected by disable PlayerController
+	// TODO replicate this function
+	if (UGameplayStatics::GetPlayerController(this, 0)->IsInputKeyDown(TEXT("R")))
+	{
+		UGameplayStatics::OpenLevel(this, TEXT("FirstPersonExampleMap"));
 	}
 }

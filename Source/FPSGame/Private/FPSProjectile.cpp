@@ -10,8 +10,8 @@ AFPSProjectile::AFPSProjectile()
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->SetCollisionProfileName("Projectile");
+	// Add delegate function to handle the OnComponentHit event
 	CollisionComp->OnComponentHit.AddDynamic(this, &AFPSProjectile::OnHit);
-	// set up a notification for when this component hits something blocking
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
@@ -30,9 +30,14 @@ AFPSProjectile::AFPSProjectile()
 
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
+
+	// Required for actor replication -> the server will request all clients to spawn and move this actor
+	// if the action is triggered on the server
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
-
+// Multicast delegate function
 void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            FVector NormalImpulse, const FHitResult& Hit)
 {
@@ -44,7 +49,13 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 		Destroy();
 	}
 
-	MakeNoise(1.0f, GetInstigator());
+	// Make noise on hit on the server and destroy the actor on all machines (as it's spawned already everywhere)
+	// This is also relevant, because if the sound is spawned on the server and synced to clients, then everybody can
+	//  hear the same location
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		MakeNoise(1.0f, GetInstigator());
 
-	Destroy();
+		Destroy();
+	}
 }

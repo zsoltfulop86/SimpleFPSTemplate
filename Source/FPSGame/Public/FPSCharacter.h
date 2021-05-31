@@ -20,6 +20,12 @@ class AFPSCharacter : public ACharacter
 	GENERATED_BODY()
 
 protected:
+	// Server function - always executed on the server and synced to the clients -> required for replicated actors
+	// WithValidation is required for Server functions for security
+	// Reliable because sync to the clients is ensured -> eventually consistent
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
+
 	/** Pawn mesh: 1st person view  */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mesh")
 	USkeletalMeshComponent* Mesh1PComponent;
@@ -31,6 +37,10 @@ protected:
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
+
+	/** Server function to set camera pitch */
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void SetCameraPitch(FRotator Rotation);
 
 public:
 	AFPSCharacter();
@@ -59,6 +69,8 @@ protected:
 
 	/** Handles strafing movement, left and right */
 	void MoveRight(float Val);
+
+	void Tick(float DeltaTime);
 
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 
