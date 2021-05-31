@@ -9,6 +9,7 @@
 #include "Animation/AnimSequence.h"
 #include "Components/PawnNoiseEmitterComponent.h"
 
+
 AFPSCharacter::AFPSCharacter()
 {
 	// Create a CameraComponent	
@@ -48,7 +49,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFPSCharacter::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &AFPSCharacter::SetCameraPitch);
 }
 
 // _Implementation is required to implement the ServerFire() function
@@ -124,12 +125,23 @@ void AFPSCharacter::MoveRight(float Value)
 	}
 }
 
-void AFPSCharacter::SetCameraPitch_Implementation(FRotator Rotation)
+void AFPSCharacter::SetCameraPitch(float Val)
+{
+	APawn::AddControllerPitchInput(Val);
+
+	// Replicate camera pitch if client executes this method
+	if (GetLocalRole() == ROLE_AutonomousProxy)
+	{
+		SetServerCameraPitch(CameraComponent->GetRelativeRotation());
+	}
+}
+
+void AFPSCharacter::SetServerCameraPitch_Implementation(FRotator Rotation)
 {
 	CameraComponent->SetRelativeRotation(Rotation);
 }
 
-bool AFPSCharacter::SetCameraPitch_Validate(FRotator Rotation)
+bool AFPSCharacter::SetServerCameraPitch_Validate(FRotator Rotation)
 {
 	return true;
 }
@@ -137,13 +149,6 @@ bool AFPSCharacter::SetCameraPitch_Validate(FRotator Rotation)
 void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// Replicate camera pitch if client executes this method
-	if (GetLocalRole() == ROLE_AutonomousProxy)
-	{
-		SetCameraPitch(CameraComponent->GetRelativeRotation());	
-	}
-	
 
 	// Restart game on pressing the R key -> is not affected by disable PlayerController
 	// TODO replicate this function

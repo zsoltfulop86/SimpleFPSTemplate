@@ -40,7 +40,10 @@ protected:
 
 	/** Server function to set camera pitch */
 	UFUNCTION(Server, Unreliable, WithValidation)
-	void SetCameraPitch(FRotator Rotation);
+	void SetServerCameraPitch(FRotator Rotation);
+
+	UFUNCTION()
+	void SetCameraPitch(float Val);
 
 public:
 	AFPSCharacter();
