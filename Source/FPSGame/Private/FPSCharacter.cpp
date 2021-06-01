@@ -138,7 +138,11 @@ void AFPSCharacter::SetCameraPitch(float Val)
 
 void AFPSCharacter::SetServerCameraPitch_Implementation(FRotator Rotation)
 {
-	CameraComponent->SetRelativeRotation(Rotation);
+	// Avoid double execution on the client requesting replication (calling the Server RPC)
+	if (!IsLocallyControlled())
+	{
+		CameraComponent->SetRelativeRotation(Rotation);
+	}
 }
 
 bool AFPSCharacter::SetServerCameraPitch_Validate(FRotator Rotation)
