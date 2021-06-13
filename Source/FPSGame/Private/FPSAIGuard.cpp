@@ -6,6 +6,7 @@
 #include "DrawDebugHelpers.h"
 #include "FPSGameMode.h"
 #include "NavigationSystem.h"
+#include "UnrealNetwork.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 
 // Sets default values
@@ -14,9 +15,11 @@ AFPSAIGuard::AFPSAIGuard()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it
 	PrimaryActorTick.bCanEverTick = true;
 
+	// AI related components are handled by the server!
 	// No attachment needed, this is not a scene component
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
 
+	// AI related methods run on the server!
 	// Figuring out what params a delegate function should have:
 	//  - go to the delegate method declaration (OnSeenPawn)
 	//  - find the DECLARE_DYNAMIC_MULTICAST_DELEGATE where the delegate name param matches the delegate method name
@@ -24,6 +27,7 @@ AFPSAIGuard::AFPSAIGuard()
 	//  - create a delegate method with the necessary params and use it to AddDynamic (add delegate)
 	PawnSensingComponent->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 
+	// AI related methods run on the server!
 	// Use AddDynamic to handle events with specific delegate methods
 	PawnSensingComponent->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
 
@@ -145,6 +149,12 @@ void AFPSAIGuard::ResetOrientation()
 	}
 }
 
+// Run on clients
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnStateChange(GuardState);
+}
+
 // Setter created so it can be used in blueprint
 void AFPSAIGuard::SetGuardState(EAIState NewState)
 {
@@ -153,10 +163,13 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 		return;
 	}
 
+	// Set on the server
 	GuardState = NewState;
+	// Called on clients
+	OnRep_GuardState();
 
-	// Call Blueprint implementable method
-	OnStateChange(GuardState);
+	// Call Blueprint implementable method -> No longer needed -> moved to OnRep_GuardState()
+	// OnStateChange(GuardState);
 }
 
 // Called every frame
@@ -176,4 +189,12 @@ void AFPSAIGuard::Tick(float DeltaTime)
 			MoveToNextPatrolPoint();
 		}
 	}
+}
+
+// Set default rule to replicate variables -> required for props set as Replicated / ReplicatedUsing
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
 }

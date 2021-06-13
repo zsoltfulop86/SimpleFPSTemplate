@@ -71,11 +71,20 @@ protected:
 
 	FTimerHandle TimerHandle_ResetOrientation;
 
-	EAIState GuardState;
+	// Called only on the client when EAIState changes
+	UFUNCTION()
+	void OnRep_GuardState();
+
+	// GetLifetimeReplicatedProps is required for it to compile
+	// Set the game to react to changes to this property by defining an OnRep function -> sync between server & clients
+	UPROPERTY(ReplicatedUsing=OnRep_GuardState)
+	TEnumAsByte<EAIState> GuardState;
 
 	void SetGuardState(EAIState NewState);
 
 	// Expose to Blueprint
 	UFUNCTION(BlueprintImplementableEvent, Category="AI")
 	void OnStateChange(EAIState NewState);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
