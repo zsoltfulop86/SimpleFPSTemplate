@@ -45,25 +45,6 @@ protected:
 	UFUNCTION()
 	void SetCameraPitch(float Val);
 
-public:
-	AFPSCharacter();
-
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category="Projectile")
-	TSubclassOf<AFPSProjectile> ProjectileClass;
-
-	/** Sound to play each time we fire */
-	UPROPERTY(EditDefaultsOnly, Category="Gameplay")
-	USoundBase* FireSound;
-
-	/** AnimMontage to play each time we fire */
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UAnimSequence* FireAnimation;
-
-	UPROPERTY(BlueprintReadOnly, Category="Gameplay")
-	bool bIsCarryingObjective;
-
-protected:
 	/** Fires a projectile. */
 	void Fire();
 
@@ -81,9 +62,29 @@ protected:
 	UPawnNoiseEmitterComponent* NoiseEmitterComponent;
 
 public:
+	AFPSCharacter();
+
+	/** Projectile class to spawn */
+	UPROPERTY(EditDefaultsOnly, Category="Projectile")
+	TSubclassOf<AFPSProjectile> ProjectileClass;
+
+	/** Sound to play each time we fire */
+	UPROPERTY(EditDefaultsOnly, Category="Gameplay")
+	USoundBase* FireSound;
+
+	/** AnimMontage to play each time we fire */
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UAnimSequence* FireAnimation;
+
+	/** Replicated property used for gameplay conditions */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category="Gameplay")
+	bool bIsCarryingObjective;
+
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1PComponent; }
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return CameraComponent; }
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

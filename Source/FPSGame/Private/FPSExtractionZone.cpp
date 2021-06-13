@@ -43,14 +43,15 @@ void AFPSExtractionZone::HandleOverlap(UPrimitiveComponent* OverlappedComponent,
 		return;
 	}
 
+	// Check if the objective is being carried -> bIsCarryingObjective need to be replicated
 	if (MyPawn->bIsCarryingObjective)
 	{
 		// Only valid if called on the server
-		AFPSGameMode* GM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
-		// Check if exists
-		if (GM)
+		AFPSGameMode* GameMode = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+		// Check if exists -> fails on all clients, because GameMode is running on the server only -> GameState needed
+		if (GameMode)
 		{
-			GM->CompleteMission(MyPawn, true);
+			GameMode->CompleteMission(MyPawn, true);
 		}
 	}
 	else

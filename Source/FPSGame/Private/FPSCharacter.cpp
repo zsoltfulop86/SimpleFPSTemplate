@@ -2,6 +2,7 @@
 
 #include "FPSCharacter.h"
 #include "FPSProjectile.h"
+#include "UnrealNetwork.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -34,6 +35,16 @@ AFPSCharacter::AFPSCharacter()
 
 	// Enable the character to make noise with MakeNoise()
 	NoiseEmitterComponent = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("NoiseEmitterComponent"));
+}
+
+void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSCharacter, bIsCarryingObjective);
+
+	// Replicated only to the player who controls the character -> an option to save bandwidth in certain cases
+	// DOREPLIFETIME_CONDITION(AFPSCharacter, bIsCarryingObjective, COND_OwnerOnly);
 }
 
 
