@@ -25,6 +25,7 @@ AFPSObjectiveActor::AFPSObjectiveActor()
 	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	SphereComp->SetupAttachment(MeshComp);
 
+	// Sync objective status
 	SetReplicates(true);
 }
 
@@ -52,18 +53,20 @@ void AFPSObjectiveActor::PlayEffects()
 	UGameplayStatics::PlaySoundAtLocation(this, PickupSound, GetActorLocation());
 }
 
-// Called when overlapping
+// Called when overlapping on both client and server -> default for overlap events
 void AFPSObjectiveActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
-	// always call super when overriding
+	// Always call super when overriding
 	Super::NotifyActorBeginOverlap(OtherActor);
 
+	// Will run on client and server
 	PlayEffects();
 
-	AFPSCharacter* MyCharacter = Cast<AFPSCharacter>(OtherActor);
-
-	if (MyCharacter)
+	// Will run as a server, because it's gameplay related
+	if (GetLocalRole() == ROLE_Authority)
 	{
+		AFPSCharacter* MyCharacter = Cast<AFPSCharacter>(OtherActor);
+
 		MyCharacter->bIsCarryingObjective = true;
 
 		Destroy();
