@@ -2,7 +2,6 @@
 
 #include "FPSGameMode.h"
 
-#include "Button.h"
 #include "FPSHUD.h"
 #include "FPSCharacter.h"
 #include "FPSGameState.h"
